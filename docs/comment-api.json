@@ -1,0 +1,179 @@
+{
+    "openapi":"3.1.1",
+    "info": {
+      "title":"Comment API",
+      "description":"Comment API",
+      "version":"1.0"
+    },
+    "servers": [
+      {"url":"https://localhost:8000"}
+    ],
+    "paths": {
+        "/api/tasks/{idTask}/comments":{
+            "post":{
+                "description": "crate comment",
+                "parameters": [{
+                    "name": "Authorization",
+                    "in": "header",
+                    "schema":{
+                        "type": "string"
+                    }
+                }],
+                "requestBody":{
+                    "description": "create comment",
+                    "content": {
+                        "application/json":{
+                            "schema":{
+                                "type":"object",
+                                "properties": {
+                                    "content":{
+                                        "type":"string"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201":{
+                        "description": "success crate comment",
+                        "content": {
+                            "application/json":{
+                                "schema":{
+                                    "type":"object",
+                                    "properties": {
+                                        "data":{
+                                            "type":"object",
+                                            "properties": {
+                                                "id":{
+                                                    "type":"number"
+                                                },
+                                                "content":{
+                                                    "type":"string"
+                                                },
+                                                "commentable_id":{
+                                                    "type":"number"
+                                                },
+                                                "commentable_type":{
+                                                    "type":"string"
+                                                },
+                                                "user_id":{
+                                                    "type":"number"
+                                                }
+                                            }
+                                        },
+                                        "errors":{
+                                            "type":"object"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "get":{
+                "description": "get comment",
+                "parameters": [
+                    {
+                        "name": "Authorization",
+                        "in": "header",
+                        "schema":{
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "idTask",
+                        "in": "path",
+                        "required": true,
+                        "schema":{
+                            "type": "number"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200":{
+                        "description": "success get comment",
+                        "content": {
+                            "application/json":{
+                                "schema":{
+                                    "type":"object",
+                                    "properties": {
+                                        "data":{
+                                            "type":"array",
+                                            "items":{
+                                                "type":"object",
+                                                "properties": {
+                                                    "id":{
+                                                        "type":"number"
+                                                    },
+                                                    "content":{
+                                                        "type":"string"
+                                                    },
+                                                    "commentable_id":{
+                                                        "type":"number"
+                                                    },
+                                                    "commentable_type":{
+                                                        "type":"string"
+                                                    },
+                                                    "user_id":{
+                                                        "type":"number"
+                                                    }
+                                                }
+                                            }
+                                        },
+                                        "errors":{
+                                            "type":"object"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/comments/{idComment}":{
+            "delete":{
+                "description": "delete comment",
+                "parameters": [
+                    {
+                        "name": "Authorization",
+                        "in": "header",
+                        "schema":{
+                            "type":"string"
+                        }
+                    },
+                    {
+                        "name": "idComment",
+                        "in": "path",
+                        "required": true,
+                        "schema":{
+                            "type":"number"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200":{
+                        "description": "success delete comment",
+                        "content": {
+                            "application/json":{
+                                "schema":{
+                                    "type":"object",
+                                    "properties": {
+                                        "data":{
+                                            "type":"boolean"
+                                        },
+                                        "errors":{
+                                            "type":"object"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

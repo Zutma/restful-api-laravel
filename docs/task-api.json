@@ -1,0 +1,302 @@
+{
+    "openapi":"3.1.1",
+    "info": {
+      "title":"Task API",
+      "description": "Task API",
+      "version":"1.0"
+    },
+    "servers": [
+      {"url":"https://localhost:8000"}
+    ],
+    "paths": {
+        "/api/tasks":{
+            "post":{
+                "description":"Create new task",
+                "parameters":[
+                    {
+                        "name":"Authorization",
+                        "in":"header",
+                        "schema":{
+                            "type":"string"
+                        }
+                    }
+                ],
+                "requestBody":{
+                    "description":"create new task",
+                    "content":{
+                        "application/json":{
+                            "schema":{
+                                "type":"object",
+                                "properties": {
+                                    "title":{
+                                        "type":"string"
+                                    },
+                                    "description":{
+                                        "type":"string"
+                                    },
+                                    "status":{
+                                        "type":"boolean"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses":{
+                    "201":{
+                        "description": "success create task",
+                        "content":{
+                            "application/json":{
+                                "schema":{
+                                    "type":"object",
+                                    "properties":{
+                                        "data":{
+                                            "type":"object",
+                                            "properties":{
+                                                "id":{
+                                                    "type":"number"
+                                                },
+                                                "title":{
+                                                    "type":"string"
+                                                },
+                                                "description":{
+                                                    "type":"string"
+                                                },
+                                                "status":{
+                                                    "type":"boolean"
+                                                }
+                                            }
+                                        },
+                                        "errors":{
+                                            "type":"object"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "get":{
+                "description": "get task list",
+                "parameters": [
+                    {
+                        "name": "Authorization",
+                        "in": "header",
+                        "schema":{
+                            "type":"string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200":{
+                        "description": "success get list task",
+                        "content": {
+                            "application/json":{
+                                "schema":{
+                                    "type":"object",
+                                    "properties": {
+                                        "data":{
+                                            "type":"array",
+                                            "items":{
+                                                "type":"object",
+                                                "properties":{
+                                                    "id":{
+                                                        "type":"number"
+                                                    },
+                                                    "title":{
+                                                        "type":"string"
+                                                    },
+                                                    "description":{
+                                                        "type":"string"
+                                                    },
+                                                    "status":{
+                                                        "type":"boolean"
+                                                    }
+                                                }
+                                            }
+                                        },
+                                        "errors":{
+                                            "type":"object"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/tasks/{idTask}":{
+            "get":{
+                "description": "get task",
+                "parameters": [
+                    {
+                        "name": "Authorization",
+                        "in": "header",
+                        "schema":{
+                            "type":"string"
+                        }
+                    },
+                    {
+                        "name": "idTask",
+                        "in": "path",
+                        "required": true,
+                        "schema":{
+                            "type":"number"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200":{
+                        "description": "success get task",
+                        "content": {
+                            "application/json":{
+                                "schema":{
+                                    "type":"object",
+                                    "properties": {
+                                        "data":{
+                                            "type":"object",
+                                                "properties":{
+                                                    "id":{
+                                                        "type":"number"
+                                                    },
+                                                    "title":{
+                                                        "type":"string"
+                                                    },
+                                                    "description":{
+                                                        "type":"string"
+                                                    },
+                                                    "status":{
+                                                        "type":"boolean"
+                                                    }
+                                                }
+                                        },
+                                        "errors":{
+                                            "type":"object"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "put":{
+                "description": "update task",
+                "parameters": [
+                    {
+                        "name": "Authorization",
+                        "in": "header",
+                        "schema":{
+                            "type":"string"
+                        }
+                    },
+                    {
+                        "name": "idTask",
+                        "in": "path",
+                        "required": true,
+                        "schema":{
+                            "type":"number"
+                        }
+                    }
+                ],
+                "requestBody":{
+                    "description": "update task",
+                    "content": {
+                        "application/json":{
+                            "schema":{
+                                "type":"object",
+                                "properties": {
+                                    "title":{
+                                        "type":"string"
+                                    },
+                                    "description":{
+                                        "type":"string"
+                                    },
+                                    "status":{
+                                        "type":"boolean"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200":{
+                        "description": "success update task",
+                        "content": {
+                            "application/json":{
+                                "schema":{
+                                    "type":"object",
+                                    "properties": {
+                                        "data":{
+                                            "type":"object",
+                                                "properties":{
+                                                    "id":{
+                                                        "type":"number"
+                                                    },
+                                                    "title":{
+                                                        "type":"string"
+                                                    },
+                                                    "description":{
+                                                        "type":"string"
+                                                    },
+                                                    "status":{
+                                                        "type":"boolean"
+                                                    }
+                                                }
+                                        },
+                                        "errors":{
+                                            "type":"object"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "delete task",
+                "parameters": [
+                    {
+                        "name": "Authorization",
+                        "in": "header",
+                        "schema":{
+                            "type":"string"
+                        }
+                    },
+                    {
+                        "name": "idTask",
+                        "in": "path",
+                        "required": true,
+                        "schema":{
+                            "type":"number"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200":{
+                        "description": "success delete task",
+                        "content": {
+                            "application/json":{
+                                "schema":{
+                                    "type":"object",
+                                    "properties": {
+                                        "data":{
+                                            "type":"boolean"
+                                        },
+                                        "errors":{
+                                            "type":"object"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+  }

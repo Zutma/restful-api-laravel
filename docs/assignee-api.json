@@ -1,0 +1,185 @@
+{
+    "openapi":"3.1.1",
+    "info": {
+      "title":"assignees API",
+      "description":"assignees api",
+      "version":"1.0"
+    },
+    "servers": [
+      {"url":"https://localhost:8000"}
+    ],
+    "paths": {
+        "/api/tasks/{idTask}/assignees":{
+            "post":{
+                "description": "assign assignees",
+                "parameters": [
+                    {
+                        "name": "Authorization",
+                        "in":"header",
+                        "schema":{
+                            "type":"string"
+                        }
+                    },
+                    {
+                        "name": "idTask",
+                        "in": "path",
+                        "required": true,
+                        "schema":{
+                            "type":"number"
+                        }
+                    }
+                ],
+                "requestBody":{
+                    "description": "assign assignees",
+                    "content": {
+                        "application/json":{
+                            "schema":{
+                                "type":"object",
+                                "properties": {
+                                    "user_id":{
+                                        "type":"number"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201":{
+                        "description": "success assign assignees",
+                        "content": {
+                            "application/json":{
+                                "schema":{
+                                    "type":"object",
+                                    "properties": {
+                                        "data":{
+                                            "type":"object",
+                                            "properties": {
+                                                "id":{
+                                                    "type":"number"
+                                                },
+                                                "task_id":{
+                                                    "type":"number"
+                                                },
+                                                "user_id":{
+                                                    "type":"number"
+                                                }
+                                            }
+                                        },
+                                        "errors":{
+                                            "type":"object"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "get": {
+                "description": "get assignees",
+                "parameters": [
+                    {
+                        "name": "Authorization",
+                        "in":"header",
+                        "schema":{
+                            "type":"string"
+                        }
+                    },
+                    {
+                        "name": "idTask",
+                        "in": "path",
+                        "required": true,
+                        "schema":{
+                            "type":"number"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200":{
+                        "description": "success get assignees",
+                        "content": {
+                            "application/json":{
+                                "schema":{
+                                    "type":"object",
+                                    "properties": {
+                                        "data":{
+                                            "type":"array",
+                                            "items":{
+                                                "type":"object",
+                                                "properties": {
+                                                    "id":{
+                                                        "type":"number"
+                                                    },
+                                                    "task_id":{
+                                                        "type":"number"
+                                                    },
+                                                    "user_id":{
+                                                        "type":"number"
+                                                    }
+                                                }
+                                            }
+                                        },
+                                        "errors":{
+                                            "type":"object"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/tasks/{idTask}/assignees/{idAssignee}":{
+            "delete": {
+                "description": "delete assignee",
+                "parameters": [
+                    {
+                        "name": "Authorization",
+                        "in":"header",
+                        "schema":{
+                            "type":"string"
+                        }
+                    },
+                    {
+                        "name": "idTask",
+                        "in": "path",
+                        "required": true,
+                        "schema":{
+                            "type":"number"
+                        }
+                    },
+                    {
+                        "name": "idAssignee",
+                        "in": "path",
+                        "required": true,
+                        "schema":{
+                            "type":"number"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200":{
+                        "description": "success delete assignee",
+                        "content": {
+                            "application/json":{
+                                "schema":{
+                                    "type":"object",
+                                    "properties": {
+                                        "data":{
+                                            "type":"boolean"
+                                        },
+                                        "errors":{
+                                            "type":"object"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+  }
