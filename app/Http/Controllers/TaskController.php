@@ -31,7 +31,13 @@ class TaskController extends Controller
     public function list(Request $request): JsonResponse {
         $user = Auth::user();
 
-        $tasks = Task::with(['tags', 'assignees'])->where('user_id', $user->id)->get();
+        $tasks = Task::with(['tags', 'assignees']);
+
+        if($user->role !== 'admin'){
+            $tasks->where('user_id', $user->id);
+        }
+
+        $tasks = $tasks->get();
 
         return (TaskResource::collection($tasks))/*->additional(['errors' => null])*/->response();
     }
@@ -39,7 +45,7 @@ class TaskController extends Controller
     public function get(int $idTask): JsonResponse {
         $user = Auth::user();
 
-        $task = Task::with(['tags', 'assignees'])->where('id', $idTask)->where('user_id', $user->id)->first();
+        $task = Task::with(['tags', 'assignees'])->where('id', $idTask)->first();
 
         if (!$task) {
             throw new HttpResponseException(response()->json([
@@ -48,13 +54,15 @@ class TaskController extends Controller
                 ]
             ], 404));
         }
+
+        $this->authorize('view', $task);
 
         return (new TaskResource($task))/*->additional(['errors' => null])*/->response();
     }
 
     public function update(int $idTask, TaskUpdateRequest $request): JsonResponse {
         $user = Auth::user();
-        $task = Task::where('id', $idTask)->where('user_id', $user->id)->first();
+        $task = Task::where('id', $idTask)->first();
 
         if (!$task) {
             throw new HttpResponseException(response()->json([
@@ -63,6 +71,8 @@ class TaskController extends Controller
                 ]
             ], 404));
         }
+
+        $this->authorize('update', $task);
 
         $data = $request->validated();
         $task->fill($data);
@@ -74,7 +84,7 @@ class TaskController extends Controller
     public function delete(int $idTask): JsonResponse {
         $user = Auth::user();
 
-        $task = Task::where('id', $idTask)->where('user_id', $user->id)->first();
+        $task = Task::where('id', $idTask)->first();
 
         if (!$task) {
             throw new HttpResponseException(response()->json([
@@ -83,6 +93,8 @@ class TaskController extends Controller
                 ]
             ], 404));
         }
+
+        $this->authorize('delete', $task);
 
         $task->delete();
         return response()->json([
@@ -94,7 +106,7 @@ class TaskController extends Controller
     public function attachTag(int $idTask, TaskAttachTagRequest $request): JsonResponse {
         $user = Auth::user();
 
-        $task = Task::where('id', $idTask)->where('user_id', $user->id)->first();
+        $task = Task::where('id', $idTask)->first();
 
         if (!$task) {
             throw new HttpResponseException(response()->json([
@@ -103,6 +115,7 @@ class TaskController extends Controller
                 ]
             ], 404));
         }
+        $this->authorize('update', $task);
 
         $data = $request->validated();
         $idTag = $data['tag_id'];
@@ -128,7 +141,7 @@ class TaskController extends Controller
     public function detachTag(int $idTask, int $idTag): JsonResponse {
         $user = Auth::user();
 
-        $task = Task::where('id', $idTask)->where('user_id', $user->id)->first();
+        $task = Task::where('id', $idTask)->first();
 
         if (!$task) {
             throw new HttpResponseException(response()->json([
@@ -137,6 +150,7 @@ class TaskController extends Controller
                 ]
             ], 404));
         }
+        $this->authorize('update', $task);
 
         $tag = Tag::where('id', $idTag)->where('user_id', $user->id)->first();
 
@@ -167,7 +181,7 @@ class TaskController extends Controller
     public function attachAssignee(int $idTask, TaskAssignRequest $request): JsonResponse {
         $user = Auth::user();
 
-        $task = Task::where('id', $idTask)->where('user_id', $user->id)->first();
+        $task = Task::where('id', $idTask)->first();
 
         if (!$task) {
             throw new HttpResponseException(response()->json([
@@ -176,6 +190,7 @@ class TaskController extends Controller
                 ]
             ], 404));
         }
+        $this->authorize('update',$task);
 
         $data = $request->validated();
         $assignId = $data['user_id'];
@@ -191,7 +206,7 @@ class TaskController extends Controller
     public function detachAssignee(int $idTask, int $idUser): JsonResponse {
         $user = Auth::user();
 
-        $task = Task::where('id', $idTask)->where('user_id', $user->id)->first();
+        $task = Task::where('id', $idTask)->first();
 
         if (!$task) {
             throw new HttpResponseException(response()->json([
@@ -200,6 +215,8 @@ class TaskController extends Controller
                 ]
             ], 404));
         }
+
+        $this->authorize('update', $task);
 
         if (!$task->assignees()->where('user_id', $idUser)->exists()) {
             throw new HttpResponseException(response()->json([
