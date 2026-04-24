@@ -6,9 +6,13 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
+use Spatie\Activitylog\Traits\LogsActivity;
+use Spatie\Activitylog\LogOptions;
 
 class Task extends Model
 {
+    use LogsActivity;
+
     protected $table = "tasks";
     protected $primaryKey = "id";
     protected $keyType = "int";
@@ -44,5 +48,13 @@ class Task extends Model
 
     public function assignees(): BelongsToMany{
         return $this->belongsToMany(User::class,"task_assignees","task_id","user_id");
+    }
+
+    public function getActivitylogOptions(): LogOptions{
+        return LogOptions::defaults()
+            ->logOnly(['title','description','status'])
+            ->logOnlyDirty()
+            ->setDescriptionForEvent(fn(string $eventName) => "Task has been {$eventName}")
+            ->dontSubmitEmptyLogs();
     }
 }

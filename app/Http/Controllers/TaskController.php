@@ -9,6 +9,7 @@ use App\Http\Requests\TaskUpdateRequest;
 use App\Http\Resources\TaskResource;
 use App\Models\Tag;
 use App\Models\Task;
+use App\Models\User;
 use Illuminate\Http\Exceptions\HttpResponseException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -132,6 +133,11 @@ class TaskController extends Controller
 
         $task->tags()->syncWithoutDetaching([$idTag]);
 
+        activity()
+            ->performedOn($task)
+            ->withProperties(['tag' => $tag->name])
+            ->log("Attached tag '{$tag->name}' to task");
+
         return response()->json([
             'data' => true,
             // 'errors' => null
@@ -172,6 +178,11 @@ class TaskController extends Controller
 
         $task->tags()->detach($idTag);
 
+        activity()
+            ->performedOn($task)
+            ->withProperties(['tag' => $tag->name])
+            ->log("Detached tag '{$tag->name}' from task");
+
         return response()->json([
             'data' => true,
             // 'errors' => null
@@ -196,6 +207,12 @@ class TaskController extends Controller
         $assignId = $data['user_id'];
 
         $task->assignees()->syncWithoutDetaching([$assignId]);
+
+        $assignee = User::find($assignId);
+        activity()
+            ->performedOn($task)
+            ->withProperties(['assignee' => $assignee->name])
+            ->log("Assigned user '{$assignee->name}' to task");
 
         return response()->json([
             'data' => true,
@@ -227,6 +244,12 @@ class TaskController extends Controller
         }
 
         $task->assignees()->detach($idUser);
+
+        $assignee = User::find($idUser);
+        activity()
+            ->performedOn($task)
+            ->withProperties(['assignee' => $assignee->name])
+            ->log("Unassigned user '{$assignee->name}' from task");
 
         return response()->json([
             'data' => true,
