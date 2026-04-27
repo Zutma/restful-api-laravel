@@ -40,7 +40,7 @@ class TaskController extends Controller
 
         $tasks = $tasks->get();
 
-        return (TaskResource::collection($tasks))/*->additional(['errors' => null])*/->response();
+        return (TaskResource::collection($tasks))/*->additional(['data' => ['username' => $user->username]])*/->response();
     }
 
     public function get(int $idTask): JsonResponse {
@@ -121,7 +121,11 @@ class TaskController extends Controller
         $data = $request->validated();
         $idTag = $data['tag_id'];
 
-        $tag = Tag::where('id', $idTag)->where('user_id', $user->id)->first();
+        $tagQuery = Tag::where('id', $idTag);
+        if ($user->role !== 'admin') {
+            $tagQuery->where('user_id', $user->id);
+        }
+        $tag = $tagQuery->first();
 
         if (!$tag) {
             throw new HttpResponseException(response()->json([
@@ -158,7 +162,11 @@ class TaskController extends Controller
         }
         $this->authorize('update', $task);
 
-        $tag = Tag::where('id', $idTag)->where('user_id', $user->id)->first();
+        $tagQuery = Tag::where('id', $idTag);
+        if ($user->role !== 'admin') {
+            $tagQuery->where('user_id', $user->id);
+        }
+        $tag = $tagQuery->first();
 
         if (!$tag) {
             throw new HttpResponseException(response()->json([
