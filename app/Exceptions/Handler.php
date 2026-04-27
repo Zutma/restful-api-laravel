@@ -2,7 +2,9 @@
 
 namespace App\Exceptions;
 
+use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
+use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Throwable;
 
 class Handler extends ExceptionHandler
@@ -27,7 +29,7 @@ class Handler extends ExceptionHandler
             //
         });
 
-        $this->renderable(function (\Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException $e, $request) {
+        $this->renderable(function (AccessDeniedHttpException $e, $request) {
             if ($request->expectsJson() || $request->is('api/*')) {
                 return response()->json([
                     "errors" => [
@@ -37,7 +39,7 @@ class Handler extends ExceptionHandler
             }
         });
 
-        $this->renderable(function (\Illuminate\Auth\Access\AuthorizationException $e, $request) {
+        $this->renderable(function (AuthorizationException $e, $request) {
             if ($request->expectsJson() || $request->is('api/*')) {
                 return response()->json([
                     "errors" => [
