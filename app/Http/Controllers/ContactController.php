@@ -29,7 +29,7 @@ class ContactController extends Controller
     public function get(int $idContact): JsonResponse {
         $user = Auth::user();
 
-        $contact = Contact::where('id', $idContact)->where('user_id', $user->id)->first();
+        $contact = Contact::where('id', $idContact)->first();
         if (!$contact) {
             throw new HttpResponseException(response()->json([
                 'errors' => [
@@ -37,6 +37,8 @@ class ContactController extends Controller
                 ]
             ], 404));
         }
+
+        $this->authorize('view', $contact);
 
         return (new ContactResource($contact))/*->additional(['errors' => null])*/->response();
     }
@@ -44,7 +46,7 @@ class ContactController extends Controller
     public function update(int $idContact, ContactUpdateRequest $request): JsonResponse {
         $user = Auth::user();
 
-        $contact = Contact::where('id', $idContact)->where('user_id', $user->id)->first();
+        $contact = Contact::where('id', $idContact)->first();
         if (!$contact) {
             throw new HttpResponseException(response()->json([
                 'errors' => [
@@ -52,6 +54,8 @@ class ContactController extends Controller
                 ]
             ], 404));
         }
+
+        $this->authorize('update', $contact);
 
         $data = $request->validated();
         $contact->fill($data);
@@ -63,7 +67,7 @@ class ContactController extends Controller
     public function delete(int $idContact): JsonResponse {
         $user = Auth::user();
 
-        $contact = Contact::where('id', $idContact)->where('user_id', $user->id)->first();
+        $contact = Contact::where('id', $idContact)->first();
         if (!$contact) {
             throw new HttpResponseException(response()->json([
                 'errors' => [
@@ -71,6 +75,8 @@ class ContactController extends Controller
                 ]
             ], 404));
         }
+
+        $this->authorize('delete', $contact);
 
         $contact->delete();
         return response()->json([
@@ -84,7 +90,11 @@ class ContactController extends Controller
         $page = $request->input('page', 1);
         $size = $request->input('size', 10);
 
-        $contacts = Contact::query()->where('user_id', $user->id);
+        $contacts = Contact::query();
+
+        if ($user->role !== 'admin') {
+            $contacts->where('user_id', $user->id);
+        }
 
         $contacts = $contacts->where(function (Builder $builder) use ($request) {
             $name = $request->input('name');

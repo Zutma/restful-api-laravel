@@ -28,7 +28,13 @@ class TagController extends Controller
     public function list(): JsonResponse{
         $user = Auth::user();
 
-        $tags = Tag::where('user_id', $user->id)->get();
+        $tags = Tag::query();
+
+        if ($user->role !== 'admin') {
+            $tags->where('user_id', $user->id);
+        }
+
+        $tags = $tags->get();
 
         return (TagResource::collection($tags))/*->additional(['errors'=>null])*/->response();
     }
@@ -36,7 +42,7 @@ class TagController extends Controller
     public function get(int $idTag): JsonResponse {
         $user = Auth::user();
 
-        $tag = Tag::where('id', $idTag)->where('user_id', $user->id)->first();
+        $tag = Tag::where('id', $idTag)->first();
 
         if (!$tag) {
             throw new HttpResponseException(response()->json([
@@ -45,6 +51,8 @@ class TagController extends Controller
                 ]
             ], 404));
         }
+
+        $this->authorize('view', $tag);
 
         return (new TagResource($tag))/*->additional(['errors' => null])*/->response();
     }
@@ -52,7 +60,7 @@ class TagController extends Controller
     public function update(int $idTag, TagUpdateRequest $request): JsonResponse {
         $user = Auth::user();
 
-        $tag = Tag::where('id', $idTag)->where('user_id', $user->id)->first();
+        $tag = Tag::where('id', $idTag)->first();
 
         if (!$tag) {
             throw new HttpResponseException(response()->json([
@@ -61,6 +69,8 @@ class TagController extends Controller
                 ]
             ], 404));
         }
+
+        $this->authorize('update', $tag);
 
         $data = $request->validated();
         $tag->fill($data);
@@ -72,7 +82,7 @@ class TagController extends Controller
     public function delete(int $idTag): JsonResponse {
         $user = Auth::user();
 
-        $tag = Tag::where('id', $idTag)->where('user_id', $user->id)->first();
+        $tag = Tag::where('id', $idTag)->first();
 
         if (!$tag) {
             throw new HttpResponseException(response()->json([
@@ -81,6 +91,8 @@ class TagController extends Controller
                 ]
             ], 404));
         }
+
+        $this->authorize('delete', $tag);
 
         $tag->delete();
         return response()->json([

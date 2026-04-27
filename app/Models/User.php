@@ -23,6 +23,10 @@ class User extends Authenticatable
         'token'
     ];
 
+    protected $attributes = [
+        'role'=> 'user'
+    ];
+
     public function contacts(): HasMany{
         return $this->hasMany(Contact::class,"user_id","id");
     }

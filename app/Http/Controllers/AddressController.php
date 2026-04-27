@@ -5,19 +5,16 @@ namespace App\Http\Controllers;
 use App\Http\Requests\AddressCreateRequest;
 use App\Http\Requests\AddressUpdateRequest;
 use App\Http\Resources\AddressResource;
-use App\Http\Resources\ContactResource;
 use App\Models\Address;
 use App\Models\Contact;
-use App\Models\User;
 use Illuminate\Http\Exceptions\HttpResponseException;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class AddressController extends Controller
 {
-    private function getContact(User $user, int $idContact): Contact{
-        $contact = Contact::where('user_id', $user->id)->where('id', $idContact)->first();
+    private function getContact(int $idContact): Contact{
+        $contact = Contact::where('id', $idContact)->first();
         if(!$contact){
             throw new HttpResponseException(response()->json([
                 'errors'=>[
@@ -25,6 +22,7 @@ class AddressController extends Controller
                 ]
             ],404));
         }
+        $this->authorize('view', $contact);
         return $contact;
     }
 
@@ -42,7 +40,7 @@ class AddressController extends Controller
 
     public function create(int $idContact, AddressCreateRequest $request): JsonResponse {
         $user = Auth::user();
-        $contact = $this->getContact($user, $idContact);
+        $contact = $this->getContact($idContact);
 
         $data = $request->validated();
         $address = new Address($data);
@@ -53,21 +51,17 @@ class AddressController extends Controller
     }
 
     public function get(int $idContact, int $idAddress): JsonResponse {
-        $user = Auth::User();
-
-        $contact = $this->getContact($user, $idContact);
-
+        $contact = $this->getContact($idContact);
         $address = $this->getAddress($contact, $idAddress);
+        $this->authorize('view', $address);
 
         return (new AddressResource($address))/*->additional(['errors' => null])*/->response();
     }
 
     public function update(int $idContact, int $idAddress, AddressUpdateRequest $request): JsonResponse {
-        $user = Auth::User();
-
-        $contact = $this->getContact($user, $idContact);
-
+        $contact = $this->getContact($idContact);
         $address = $this->getAddress($contact, $idAddress);
+        $this->authorize('update', $address);
 
         $data = $request->validated();
         $address->fill($data);
@@ -77,11 +71,9 @@ class AddressController extends Controller
     }
 
     public function delete(int $idContact, int $idAddress): JsonResponse {
-        $user = Auth::User();
-
-        $contact = $this->getContact($user, $idContact);
-
+        $contact = $this->getContact($idContact);
         $address = $this->getAddress($contact, $idAddress);
+        $this->authorize('delete', $address);
 
         $address->delete();
 
@@ -92,9 +84,7 @@ class AddressController extends Controller
     }
 
     public function list(int $idContact): JsonResponse {
-        $user = Auth::User();
-
-        $contact = $this->getContact($user, $idContact);
+        $contact = $this->getContact($idContact);
 
         $addresses = Address::where('contact_id', $contact->id)->get();
 

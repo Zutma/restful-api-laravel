@@ -8,7 +8,6 @@ use App\Models\Comment;
 use App\Models\Task;
 use Illuminate\Http\Exceptions\HttpResponseException;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class CommentController extends Controller
@@ -25,6 +24,8 @@ class CommentController extends Controller
                 ]
             ],404));
         }
+
+        $this->authorize('view', $task);
 
         $data = $request->validated();
 
@@ -49,15 +50,17 @@ class CommentController extends Controller
             ],404));
         }
         
+        $this->authorize('view', $task);
+
         $comments = $task->comments()->with('user')->get();
 
         return (CommentResource::collection($comments))/*->additional(['errors'=>null])*/->response();
     }
 
-    public function delete(int $idTask,int $idComment):JsonResponse{
+    public function delete(int $idTask, int $idComment): JsonResponse{
         $user = Auth::user();
 
-        $task = Task::where('id',$idTask)->first();
+        $task = Task::where('id', $idTask)->first();
 
         if(!$task){
             throw new HttpResponseException(response()->json([
@@ -67,7 +70,7 @@ class CommentController extends Controller
             ],404));
         }
 
-        $comment = Comment::where('id',$idComment)->where('user_id',$user->id)->first();
+        $comment = Comment::where('id', $idComment)->first();
 
         if(!$comment){
             throw new HttpResponseException(response()->json([
@@ -76,6 +79,8 @@ class CommentController extends Controller
                 ]
             ],404));
         }
+
+        $this->authorize('delete', $comment);
 
         $comment->delete();
         return response()->json([
