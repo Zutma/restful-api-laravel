@@ -26,5 +26,25 @@ class Handler extends ExceptionHandler
         $this->reportable(function (Throwable $e) {
             //
         });
+
+        $this->renderable(function (\Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException $e, $request) {
+            if ($request->expectsJson() || $request->is('api/*')) {
+                return response()->json([
+                    "errors" => [
+                        "message" => ["forbidden"]
+                    ]
+                ], 403);
+            }
+        });
+
+        $this->renderable(function (\Illuminate\Auth\Access\AuthorizationException $e, $request) {
+            if ($request->expectsJson() || $request->is('api/*')) {
+                return response()->json([
+                    "errors" => [
+                        "message" => ["forbidden"]
+                    ]
+                ], 403);
+            }
+        });
     }
 }
