@@ -17,37 +17,35 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 
 class TaskController extends Controller
 {
-
-    public function create(TaskCreateRequest $request): JsonResponse {
-        $data = $request->validated();
+    public function list(Request $request): JsonResponse
+    {
+        /** @var \App\Models\User $user */
         $user = Auth::user();
+        $tasks = Task::with(['tags', 'assignees']);
+
+        if (!$user->can('task-list')) {
+            $tasks->where('user_id', $user->id);
+        }
+        $tasks = $tasks->get();
+
+        return (TaskResource::collection($tasks))->response();
+    }
+
+    public function create(TaskCreateRequest $request): JsonResponse
+    {
+        $user = Auth::user();
+        $data = $request->validated();
 
         $task = new Task($data);
         $task->user_id = $user->id;
         $task->save();
 
-        return (new TaskResource($task))/*->additional(['errors' => null])*/->response()->setStatusCode(201);
+        return (new TaskResource($task))->response()->setStatusCode(201);
     }
 
-    public function list(Request $request): JsonResponse {
-        $user = Auth::user();
-
-        $tasks = Task::with(['tags', 'assignees']);
-
-        if($user->role !== 'admin'){
-            $tasks->where('user_id', $user->id);
-        }
-
-        $tasks = $tasks->get();
-
-        return (TaskResource::collection($tasks))/*->additional(['data' => ['username' => $user->username]])*/->response();
-    }
-
-    public function get(int $idTask): JsonResponse {
-        $user = Auth::user();
-
+    public function get(int $idTask): JsonResponse
+    {
         $task = Task::with(['tags', 'assignees'])->where('id', $idTask)->first();
-
         if (!$task) {
             throw new HttpResponseException(response()->json([
                 'errors' => [
@@ -58,13 +56,12 @@ class TaskController extends Controller
 
         $this->authorize('view', $task);
 
-        return (new TaskResource($task))/*->additional(['errors' => null])*/->response();
+        return (new TaskResource($task))->response();
     }
 
-    public function update(int $idTask, TaskUpdateRequest $request): JsonResponse {
-        $user = Auth::user();
+    public function update(int $idTask, TaskUpdateRequest $request): JsonResponse
+    {
         $task = Task::where('id', $idTask)->first();
-
         if (!$task) {
             throw new HttpResponseException(response()->json([
                 'errors' => [
@@ -79,14 +76,12 @@ class TaskController extends Controller
         $task->fill($data);
         $task->save();
 
-        return (new TaskResource($task))/*->additional(['errors' => null])*/->response();
+        return (new TaskResource($task))->response();
     }
 
-    public function delete(int $idTask): JsonResponse {
-        $user = Auth::user();
-
+    public function delete(int $idTask): JsonResponse
+    {
         $task = Task::where('id', $idTask)->first();
-
         if (!$task) {
             throw new HttpResponseException(response()->json([
                 'errors' => [
@@ -98,17 +93,17 @@ class TaskController extends Controller
         $this->authorize('delete', $task);
 
         $task->delete();
+
         return response()->json([
             'data' => true,
-            // 'errors' => null
         ], 200);
     }
 
-    public function attachTag(int $idTask, TaskAttachTagRequest $request): JsonResponse {
+    public function attachTag(int $idTask, TaskAttachTagRequest $request): JsonResponse
+    {
+        /** @var \App\Models\User $user */
         $user = Auth::user();
-
         $task = Task::where('id', $idTask)->first();
-
         if (!$task) {
             throw new HttpResponseException(response()->json([
                 'errors' => [
@@ -116,17 +111,16 @@ class TaskController extends Controller
                 ]
             ], 404));
         }
+
         $this->authorize('update', $task);
 
         $data = $request->validated();
         $idTag = $data['tag_id'];
-
         $tagQuery = Tag::where('id', $idTag);
-        if ($user->role !== 'admin') {
+        if (!$user->hasRole('admin')) {
             $tagQuery->where('user_id', $user->id);
         }
         $tag = $tagQuery->first();
-
         if (!$tag) {
             throw new HttpResponseException(response()->json([
                 'errors' => [
@@ -144,15 +138,14 @@ class TaskController extends Controller
 
         return response()->json([
             'data' => true,
-            // 'errors' => null
         ], 200);
     }
 
-    public function detachTag(int $idTask, int $idTag): JsonResponse {
+    public function detachTag(int $idTask, int $idTag): JsonResponse
+    {
+        /** @var \App\Models\User $user */
         $user = Auth::user();
-
         $task = Task::where('id', $idTask)->first();
-
         if (!$task) {
             throw new HttpResponseException(response()->json([
                 'errors' => [
@@ -160,14 +153,14 @@ class TaskController extends Controller
                 ]
             ], 404));
         }
+
         $this->authorize('update', $task);
 
         $tagQuery = Tag::where('id', $idTag);
-        if ($user->role !== 'admin') {
+        if (!$user->hasRole('admin')) {
             $tagQuery->where('user_id', $user->id);
         }
         $tag = $tagQuery->first();
-
         if (!$tag) {
             throw new HttpResponseException(response()->json([
                 'errors' => [
@@ -193,15 +186,12 @@ class TaskController extends Controller
 
         return response()->json([
             'data' => true,
-            // 'errors' => null
         ], 200);
     }
 
-    public function attachAssignee(int $idTask, TaskAssignRequest $request): JsonResponse {
-        $user = Auth::user();
-
+    public function attachAssignee(int $idTask, TaskAssignRequest $request): JsonResponse
+    {
         $task = Task::where('id', $idTask)->first();
-
         if (!$task) {
             throw new HttpResponseException(response()->json([
                 'errors' => [
@@ -209,11 +199,11 @@ class TaskController extends Controller
                 ]
             ], 404));
         }
-        $this->authorize('update',$task);
+
+        $this->authorize('update', $task);
 
         $data = $request->validated();
         $assignId = $data['user_id'];
-
         $task->assignees()->syncWithoutDetaching([$assignId]);
 
         $assignee = User::find($assignId);
@@ -224,15 +214,12 @@ class TaskController extends Controller
 
         return response()->json([
             'data' => true,
-            // 'errors' => null
         ], 200);
     }
 
-    public function detachAssignee(int $idTask, int $idUser): JsonResponse {
-        $user = Auth::user();
-
+    public function detachAssignee(int $idTask, int $idUser): JsonResponse
+    {
         $task = Task::where('id', $idTask)->first();
-
         if (!$task) {
             throw new HttpResponseException(response()->json([
                 'errors' => [
@@ -261,7 +248,6 @@ class TaskController extends Controller
 
         return response()->json([
             'data' => true,
-            // 'errors' => null
         ], 200);
     }
 }

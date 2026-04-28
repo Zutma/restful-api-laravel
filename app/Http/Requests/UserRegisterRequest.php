@@ -27,7 +27,7 @@ class UserRegisterRequest extends FormRequest
             'username' => ['required', 'max:100', 'unique:users'],
             'password' => ['required', 'max:100'],
             'name' => ['required', 'max:100'],
-            // 'role' => ['nullable','max:50']
+            'role' => ['nullable', 'max:50']
         ];
     }
 
@@ -38,9 +38,10 @@ class UserRegisterRequest extends FormRequest
         ];
     }
 
-    protected function failedValidation(Validator $validator){
+    protected function failedValidation(Validator $validator)
+    {
         throw new HttpResponseException(response([
-            "errors"=> $validator->getMessageBag()
-        ],400));
+            "errors" => $validator->getMessageBag()
+        ], 400));
     }
 }

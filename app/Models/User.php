@@ -8,10 +8,11 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 use Spatie\Activitylog\Traits\LogsActivity;
 use Spatie\Activitylog\LogOptions;
+use Spatie\Permission\Traits\HasRoles;
 
 class User extends Authenticatable
 {
-    use LogsActivity;
+    use LogsActivity, HasRoles;
 
     protected $table = "users";
     protected $primaryKey = "id";
@@ -19,9 +20,10 @@ class User extends Authenticatable
     public $timestamps = true;
     public $incrementing = true;
 
-    public function getActivitylogOptions(): LogOptions{
+    public function getActivitylogOptions(): LogOptions
+    {
         return LogOptions::defaults()
-            ->logOnly(['username', 'name', 'role'])
+            ->logOnly(['username', 'name'])
             ->logOnlyDirty()
             ->setDescriptionForEvent(fn(string $eventName) => "User has been {$eventName}")
             ->dontSubmitEmptyLogs();
@@ -31,27 +33,26 @@ class User extends Authenticatable
         'username',
         'password',
         'name',
-        'role',
         'token'
     ];
 
-    protected $attributes = [
-        'role'=> 'user'
-    ];
-
-    public function contacts(): HasMany{
-        return $this->hasMany(Contact::class,"user_id","id");
+    public function contacts(): HasMany
+    {
+        return $this->hasMany(Contact::class, "user_id", "id");
     }
 
-    public function tasks(): HasMany{
-        return $this->hasMany(Task::class,"user_id","id");
+    public function tasks(): HasMany
+    {
+        return $this->hasMany(Task::class, "user_id", "id");
     }
 
-    public function assignedTasks(): BelongsToMany{
+    public function assignedTasks(): BelongsToMany
+    {
         return $this->belongsToMany(Task::class, "task_assignees", "user_id", "task_id");
     }
 
-    public function comments(): HasMany{
+    public function comments(): HasMany
+    {
         return $this->hasMany(Comment::class, "user_id", "id");
     }
 }

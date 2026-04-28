@@ -15,14 +15,21 @@ class UserSeeder extends Seeder
             'username'=> 'test',
             'password'=> Hash::make('test'),    
             'name'=>'test',
-            'token' => 'test'
-        ]);
+            'token' => 'test',
+        ])->assignRole('admin');
 
         User::create([
             'username'=> 'test2',
             'password'=> Hash::make('test2'),    
             'name'=>'test2',
             'token' => 'test2'
-        ]);
+        ])->assignRole('supervisor');
+
+        User::create([
+            'username'=> 'test3',
+            'password'=> Hash::make('test3'),    
+            'name'=>'test3',
+            'token' => 'test3'
+        ])->assignRole('user');
     }
 }

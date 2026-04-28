@@ -6,31 +6,37 @@ use App\Http\Requests\UserLoginRequest;
 use App\Http\Requests\UserRegisterRequest;
 use App\Http\Requests\UserUpdateRequest;
 use App\Http\Resources\UserResource;
-use Illuminate\Http\Request;
-use Illuminate\Http\Exceptions\HttpResponseException;
-use Illuminate\Support\Facades\Hash;
 use App\Models\User;
+use Illuminate\Http\Exceptions\HttpResponseException;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
-
 
 class UserController extends Controller
 {
-    public function register(UserRegisterRequest $request): JsonResponse {
+    public function register(UserRegisterRequest $request): JsonResponse
+    {
         $data = $request->validated();
 
         $user = new User($data);
         $user->password = Hash::make($data['password']);
         $user->save();
 
+        if (isset($data['roles'])){
+            $user->assignRole($data['roles']);
+        }else{
+            $user->assignRole('user');
+        }
         return (new UserResource($user))/*->additional(['errors' => null])*/->response()->setStatusCode(201);
     }
 
-    public function login(UserLoginRequest $request): JsonResponse {
+    public function login(UserLoginRequest $request): JsonResponse
+    {
         $data = $request->validated();
 
-        $user = User::where('username', $data['username'])->first();
+        $user = User::with('roles')->where('username', $data['username'])->first();
         if (!$user || !Hash::check($data['password'], $user->password)) {
             throw new HttpResponseException(response()->json([
                 "errors" => [
@@ -48,15 +54,18 @@ class UserController extends Controller
         ])->response();
     }
 
-    public function get(Request $request): JsonResponse {
+    public function get(Request $request): JsonResponse
+    {
         $user = Auth::user();
+        $user->load('roles');
         return (new UserResource($user))->additional([
             'data' => ['token' => $user->token],
             // 'errors' => null
         ])->response();
     }
 
-    public function update(UserUpdateRequest $request): JsonResponse {
+    public function update(UserUpdateRequest $request): JsonResponse
+    {
         $data = $request->validated();
         $user = Auth::user();
 
@@ -72,7 +81,8 @@ class UserController extends Controller
         return (new UserResource($user))/*->additional(['errors' => null])*/->response();
     }
 
-    public function logout(Request $request): JsonResponse {
+    public function logout(Request $request): JsonResponse
+    {
         $user = Auth::user();
         $user->token = null;
         $user->save();
