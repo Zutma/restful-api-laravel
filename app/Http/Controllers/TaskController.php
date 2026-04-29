@@ -20,7 +20,7 @@ class TaskController extends Controller
     public function list(Request $request): JsonResponse
     {
         $user = Auth::user();
-        $tasks = Task::with(['tags', 'assignees']);
+        $tasks = Task::with(['tags', 'assignees', 'user']);
 
         if (!$user->can('task-list')) {
             if ($user->hasRole('supervisor')) {
@@ -51,7 +51,7 @@ class TaskController extends Controller
     {
         $user = Auth::user();
 
-        $query = Task::with(['tags', 'assignees'])->where('id', $idTask);
+        $query = Task::with(['tags', 'assignees', 'user'])->where('id', $idTask);
 
         if (!$user->can('task-list')) {
             if ($user->hasRole('supervisor')) {

@@ -21,6 +21,7 @@ class TaskResource extends JsonResource
             'status'=> $this->status,
             'tags' => TagResource::collection($this->whenLoaded('tags')),
             'assignees' => UserResource::collection($this->whenLoaded('assignees')),
+            'creator' => new UserResource($this->whenLoaded('user')),
         ];
     }
 }
