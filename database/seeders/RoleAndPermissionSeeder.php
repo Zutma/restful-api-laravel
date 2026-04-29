@@ -32,7 +32,7 @@ class RoleAndPermissionSeeder extends Seeder
         $manager->syncPermissions(['task-list','contact-manage','address-manage','comment-manage','tag-manage']);
 
         $supervisor =Role::firstOrCreate(['name' => 'supervisor']);
-        $supervisor->syncPermissions(['task-manage', 'tag-manage', 'comment-manage']);
+        $supervisor->syncPermissions(['task-manage', 'tag-manage']);
 
         $user = Role::firstOrCreate(['name' => 'user']);
         $user->syncPermissions([]);

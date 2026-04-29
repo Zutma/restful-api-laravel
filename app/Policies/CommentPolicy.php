@@ -17,13 +17,8 @@ class CommentPolicy
         return true;
     }
 
-    public function update(User $user, Comment $comment): bool
-    {
-        return $user->can('comment-manage') || $comment->user_id === $user->id;
-    }
-
     public function delete(User $user, Comment $comment): bool
     {
-        return $comment->user_id === $user->id;
+        return $user->can('comment-manage') || $comment->user_id === $user->id;
     }
 }
