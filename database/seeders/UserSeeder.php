@@ -12,24 +12,45 @@ class UserSeeder extends Seeder
     public function run(): void
     {
         User::create([
-            'username'=> 'test',
-            'password'=> Hash::make('test'),    
-            'name'=>'test',
-            'token' => 'test',
+            'username'=> 'admin',
+            'password'=> Hash::make('password'),    
+            'name'=>'admin',
+            'token' => 'token-admin',
         ])->assignRole('admin');
 
         User::create([
-            'username'=> 'test2',
-            'password'=> Hash::make('test2'),    
-            'name'=>'test2',
-            'token' => 'test2'
+            'username'=> 'manager',
+            'password'=> Hash::make('password'),    
+            'name'=>'manager',
+            'token' => 'token-manager'
+        ])->assignRole('manager');
+
+        User::create([
+            'username'=> 'supervisor1',
+            'password'=> Hash::make('password'),    
+            'name'=>'supervisor1',
+            'token' => 'token-supervisor1'
         ])->assignRole('supervisor');
 
         User::create([
-            'username'=> 'test3',
-            'password'=> Hash::make('test3'),    
-            'name'=>'test3',
-            'token' => 'test3'
+            'username'=> 'supervisor2',
+            'password'=> Hash::make('password'),    
+            'name'=>'supervisor2',
+            'token' => 'token-supervisor2'
+        ])->assignRole('supervisor');
+
+        User::create([
+            'username'=> 'user1',
+            'password'=> Hash::make('password'),    
+            'name'=>'user1',
+            'token' => 'token-user1'
+        ])->assignRole('user');
+
+        User::create([
+            'username'=> 'user2',
+            'password'=> Hash::make('password'),    
+            'name'=>'user2',
+            'token' => 'token-user2'
         ])->assignRole('user');
     }
 }

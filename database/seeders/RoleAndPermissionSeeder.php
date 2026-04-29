@@ -18,21 +18,23 @@ class RoleAndPermissionSeeder extends Seeder
     {
         app()[PermissionRegistrar::class]->forgetCachedPermissions();
 
-        Permission::create(['name' => 'task-list']);
-        Permission::create(['name' => 'task-create']);
-        Permission::create(['name' => 'task-edit']);
-        Permission::create(['name' => 'task-delete']);
+        Permission::firstOrCreate(['name' => 'task-list']);
+        Permission::firstOrCreate(['name' => 'task-manage']);
+        Permission::firstOrCreate(['name' => 'tag-manage']);
+        Permission::firstOrCreate(['name' => 'comment-manage']);
+        Permission::firstOrCreate(['name' => 'contact-manage']);
+        Permission::firstOrCreate(['name' => 'address-manage']);
 
-        Permission::create(['name' => 'tag-manage']);
-        Permission::create(['name' => 'comment-manage']);
+        $admin = Role::firstOrCreate(['name' => 'admin']);
+        $admin->syncPermissions(Permission::all());
 
-        $admin = Role::create(['name' => 'admin']);
-        $admin->givePermissionTo(Permission::all());
+        $manager = Role::firstOrCreate(['name' => 'manager']);
+        $manager->syncPermissions(['task-list','contact-manage','address-manage','comment-manage','tag-manage']);
 
-        $supervisor =Role::create(['name' => 'supervisor']);
-        $supervisor->givePermissionTo(['task-list','task-create','task-edit','task-delete']);
+        $supervisor =Role::firstOrCreate(['name' => 'supervisor']);
+        $supervisor->syncPermissions(['task-manage', 'tag-manage', 'comment-manage']);
 
-        $user = Role::create(['name' => 'user']);
-        $user->givePermissionTo(['task-list']);
+        $user = Role::firstOrCreate(['name' => 'user']);
+        $user->syncPermissions([]);
     }
 }

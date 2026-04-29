@@ -11,7 +11,7 @@ class ContactSeeder extends Seeder
 {
     public function run(): void
     {
-        $user = User::where('username','test')->first();
+        $user = User::where('username','user1')->first();
         Contact::create([
             'first_name'=> 'test',
             'last_name'=>'test',

@@ -19,12 +19,15 @@ class TaskController extends Controller
 {
     public function list(Request $request): JsonResponse
     {
-        /** @var \App\Models\User $user */
         $user = Auth::user();
         $tasks = Task::with(['tags', 'assignees']);
 
         if (!$user->can('task-list')) {
-            $tasks->where('user_id', $user->id);
+            if ($user->hasRole('supervisor')) {
+                $tasks->where('user_id', $user->id);
+            } elseif ($user->hasRole('user')) {
+                $tasks->whereRelation('assignees', 'user_id', $user->id);
+            }
         }
         $tasks = $tasks->get();
 
@@ -33,6 +36,7 @@ class TaskController extends Controller
 
     public function create(TaskCreateRequest $request): JsonResponse
     {
+        $this->authorize('create', Task::class);
         $user = Auth::user();
         $data = $request->validated();
 
@@ -45,7 +49,20 @@ class TaskController extends Controller
 
     public function get(int $idTask): JsonResponse
     {
-        $task = Task::with(['tags', 'assignees'])->where('id', $idTask)->first();
+        $user = Auth::user();
+
+        $query = Task::with(['tags', 'assignees'])->where('id', $idTask);
+
+        if (!$user->can('task-list')) {
+            if ($user->hasRole('supervisor')) {
+                $query->where('user_id', $user->id);
+            } elseif ($user->hasRole('user')) {
+                $query->whereRelation('assignees', 'user_id', $user->id);
+            }
+        }
+
+        $task = $query->first();
+
         if (!$task) {
             throw new HttpResponseException(response()->json([
                 'errors' => [
@@ -53,8 +70,6 @@ class TaskController extends Controller
                 ]
             ], 404));
         }
-
-        $this->authorize('view', $task);
 
         return (new TaskResource($task))->response();
     }
@@ -101,7 +116,6 @@ class TaskController extends Controller
 
     public function attachTag(int $idTask, TaskAttachTagRequest $request): JsonResponse
     {
-        /** @var \App\Models\User $user */
         $user = Auth::user();
         $task = Task::where('id', $idTask)->first();
         if (!$task) {
@@ -143,7 +157,6 @@ class TaskController extends Controller
 
     public function detachTag(int $idTask, int $idTag): JsonResponse
     {
-        /** @var \App\Models\User $user */
         $user = Auth::user();
         $task = Task::where('id', $idTask)->first();
         if (!$task) {

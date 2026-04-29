@@ -24,12 +24,12 @@ class UserController extends Controller
         $user->password = Hash::make($data['password']);
         $user->save();
 
-        if (isset($data['roles'])){
-            $user->assignRole($data['roles']);
+        if (isset($data['role'])){
+            $user->assignRole($data['role']);
         }else{
             $user->assignRole('user');
         }
-        return (new UserResource($user))/*->additional(['errors' => null])*/->response()->setStatusCode(201);
+        return (new UserResource($user))->additional(['errors' => null])->response()->setStatusCode(201);
     }
 
     public function login(UserLoginRequest $request): JsonResponse

@@ -4,7 +4,9 @@ namespace Tests\Feature;
 
 use App\Models\Comment;
 use App\Models\Task;
+use App\Models\User;
 use Database\Seeders\UserSeeder;
+use Database\Seeders\RoleAndPermissionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
 use Tests\TestCase;
@@ -14,22 +16,23 @@ class CommentTest extends TestCase
     use RefreshDatabase;
     
     public function testCreateCommentSuccess(){
-        $this->seed([UserSeeder::class]);
-
+        $this->seed([RoleAndPermissionSeeder::class, UserSeeder::class]);
 
         $this->post('/api/tasks',[
             'title'=>'test',
             'description'=>'test',
         ],[
-            'Authorization'=>'test'
+            'Authorization'=>'token-supervisor1'
         ]);
 
         $task = Task::query()->limit(1)->first();
+        $user1 = User::where('username', 'user1')->first();
+        $task->assignees()->attach($user1->id);
 
         $this->post('/api/tasks/'.$task->id.'/comments',[
             'content'=>'test',
         ],[
-            'Authorization'=>'test'
+            'Authorization'=>'token-user1'
         ])->assertStatus(201)
         ->assertJson([
             'data'=>[
@@ -39,25 +42,27 @@ class CommentTest extends TestCase
     }
 
     public function testGetListCommentsSuccess(){
-        $this->seed([UserSeeder::class]);
+        $this->seed([RoleAndPermissionSeeder::class, UserSeeder::class]);
 
         $this->post('/api/tasks',[ 
             'title'=>'test',
             'description'=>'test',
         ],[
-            'Authorization'=>'test'
+            'Authorization'=>'token-supervisor1'
         ]);
 
         $task = Task::query()->limit(1)->first();
+        $user1 = User::where('username', 'user1')->first();
+        $task->assignees()->attach($user1->id);
 
         $this->post('/api/tasks/'.$task->id.'/comments',[
             'content'=>'test',
         ],[
-            'Authorization'=>'test'
+            'Authorization'=>'token-user1'
         ]);
 
         $this->get('/api/tasks/'.$task->id.'/comments',[
-            'Authorization'=>'test'
+            'Authorization'=>'token-user1'
         ])->assertStatus(200)
         ->assertJson([
             'data'=>[[
@@ -67,27 +72,29 @@ class CommentTest extends TestCase
     }
 
     public function testDeleteCommentsSuccess(){
-        $this->seed([UserSeeder::class]);
+        $this->seed([RoleAndPermissionSeeder::class, UserSeeder::class]);
 
         $this->post('/api/tasks',[ 
             'title'=>'test',
             'description'=>'test',
         ],[
-            'Authorization'=>'test'
+            'Authorization'=>'token-supervisor1'
         ]);
 
         $task = Task::query()->limit(1)->first();
+        $user1 = User::where('username', 'user1')->first();
+        $task->assignees()->attach($user1->id);
 
         $this->post('/api/tasks/'.$task->id.'/comments',[
             'content'=>'test',
         ],[
-            'Authorization'=>'test'
+            'Authorization'=>'token-user1'
         ]);
 
         $comment = Comment::query()->limit(1)->first();
 
         $this->delete('/api/tasks/'.$task->id.'/comments/'.$comment->id,[],[
-            'Authorization'=>'test'
+            'Authorization'=>'token-user1'
         ])->assertStatus(200)
         ->assertJson([
             'data'=>true

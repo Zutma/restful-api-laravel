@@ -39,6 +39,7 @@ class AddressController extends Controller
     }
 
     public function create(int $idContact, AddressCreateRequest $request): JsonResponse {
+        $this->authorize('create', Address::class);
         $user = Auth::user();
         $contact = $this->getContact($idContact);
 
@@ -47,7 +48,7 @@ class AddressController extends Controller
         $address->contact_id = $contact->id;
         $address->save();
 
-        return (new AddressResource($address))/*->additional(['errors' => null])*/->response()->setStatusCode(201);
+        return (new AddressResource($address))->response()->setStatusCode(201);
     }
 
     public function get(int $idContact, int $idAddress): JsonResponse {

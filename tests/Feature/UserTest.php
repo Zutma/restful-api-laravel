@@ -6,6 +6,7 @@ use Illuminate\Foundation\Testing\WithFaker;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 use Database\Seeders\UserSeeder;
+use Database\Seeders\RoleAndPermissionSeeder;
 use App\Models\User;
 
 class UserTest extends TestCase
@@ -13,6 +14,7 @@ class UserTest extends TestCase
     use RefreshDatabase;
 
     public function testRegisterSuccess(){
+        $this->seed([RoleAndPermissionSeeder::class]);
         $this->post('api/users',[
             'username' => 'khannedyu',
             'password'=> 'rahasia',
@@ -42,6 +44,7 @@ class UserTest extends TestCase
     }
 
     public function testRegisterUsernameAlreadyExist(){
+        $this->seed([RoleAndPermissionSeeder::class]);
         $this->testRegisterSuccess();
         $this->post('api/users',[
             'username' => 'khannedyu',
@@ -56,25 +59,25 @@ class UserTest extends TestCase
     }
 
     public function testLoginSuccess(){
-       $this->seed([UserSeeder::class]);
+       $this->seed([RoleAndPermissionSeeder::class, UserSeeder::class]);
        $this->post('api/users/login',[
-            'username' => 'test',
-            'password'=> 'test',
+            'username' => 'admin',
+            'password'=> 'password',
        ])->assertStatus(200)
        ->assertJson([
             'data' => [
-                'username' => 'test',
-                'name' => 'test',
+                'username' => 'admin',
+                'name' => 'admin',
             ]
        ]);
-       $user = User::where('username', 'test')->first();
+       $user = User::where('username', 'admin')->first();
        $this->assertNotNull($user->token);
     } 
 
     public function testLoginFailedUsernameNotFound(){
         $this->post('api/users/login',[
-            'username' => 'test',
-            'password'=> 'test',
+            'username' => 'admin',
+            'password'=> 'password',
        ])->assertStatus(401)
        ->assertJson([
             'errors' => [
@@ -84,9 +87,9 @@ class UserTest extends TestCase
     }
 
     public function testLoginFailedPasswordWrong(){
-        $this->seed([UserSeeder::class]);
+        $this->seed([RoleAndPermissionSeeder::class, UserSeeder::class]);
         $this->post('api/users/login',[
-            'username' => 'test',
+            'username' => 'admin',
             'password'=> 'salah',
        ])->assertStatus(401)
        ->assertJson([
@@ -97,21 +100,21 @@ class UserTest extends TestCase
     }
 
     public function testGetSuccess(){
-        $this->seed([UserSeeder::class]);
+        $this->seed([RoleAndPermissionSeeder::class, UserSeeder::class]);
 
         $this->get('/api/users/current',[
-            'Authorization'=>'test'
+            'Authorization'=>'token-admin'
         ])->assertStatus(200)
             ->assertJson([
                 'data'=>[
-                    'username'=>'test',
-                    'name'=>'test'
+                    'username'=>'admin',
+                    'name'=>'admin'
                 ]
             ]);
     }
 
     public function testGetUnauthorized(){
-        $this->seed([UserSeeder::class]);
+        $this->seed([RoleAndPermissionSeeder::class, UserSeeder::class]);
 
         $this->get('/api/users/current')
             ->assertStatus(401)
@@ -125,7 +128,7 @@ class UserTest extends TestCase
     }
 
     public function testGetInvalidToken(){
-        $this->seed([UserSeeder::class]);
+        $this->seed([RoleAndPermissionSeeder::class, UserSeeder::class]);
 
         $this->get('/api/users/current',[
             'Authorization'=>'salah'
@@ -140,52 +143,52 @@ class UserTest extends TestCase
     }
 
     public function testUpdateNameSuccess(){
-        $this->seed([UserSeeder::class]);
-        $oldUser = User::where('username','test')->first();
+        $this->seed([RoleAndPermissionSeeder::class, UserSeeder::class]);
+        $oldUser = User::where('username','admin')->first();
 
         $this->patch('/api/users/current', [
             'name' => 'eko'
         ], [
-            'Authorization' => 'test'
+            'Authorization' => 'token-admin'
         ])->assertStatus(200)
             ->assertJson([
                 'data'=>[
-                    'username'=>'test',
+                    'username'=>'admin',
                     'name'=>'eko'
                 ]
             ]);
 
-        $newUser = User::where('username','test')->first();
+        $newUser = User::where('username','admin')->first();
         self::assertNotEquals($oldUser->name,$newUser->name);
     }
 
     public function testUpdatePasswordSuccess(){
-        $this->seed([UserSeeder::class]);
-        $oldUser = User::where('username','test')->first();
+        $this->seed([RoleAndPermissionSeeder::class, UserSeeder::class]);
+        $oldUser = User::where('username','admin')->first();
 
         $this->patch('/api/users/current', [
             'password' => 'baru'
         ], [
-            'Authorization' => 'test'
+            'Authorization' => 'token-admin'
         ])->assertStatus(200)
             ->assertJson([
                 'data'=>[
-                    'username'=>'test',
-                    'name'=>'test'
+                    'username'=>'admin',
+                    'name'=>'admin'
                 ]
             ]);
 
-        $newUser = User::where('username','test')->first();
+        $newUser = User::where('username','admin')->first();
         self::assertNotEquals($oldUser->password,$newUser->password);
     }
 
     public function testUpdateFailed(){
-        $this->seed([UserSeeder::class]);
+        $this->seed([RoleAndPermissionSeeder::class, UserSeeder::class]);
 
         $this->patch('/api/users/current', [
             'name' => 'ekoekoekoekoekoekoekoekoekoekoekoekoekoekoekoekoekoekoekoekoekoekoekoekoekoekoekoekoekoekoekoekoekoekoekoekoekoekoekoekoekoekoekoekoekoekoekoekoekoekoekoekoekoekoekoekoekoekoekoekoekoekoekoekoekoekoekoekoekoekoekoekoekoekoekoekoekoekoekoekoekoekoekoekoekoekoekoekoekoekoekoekoekoeko'
         ], [
-            'Authorization' => 'test'
+            'Authorization' => 'token-admin'
         ])->assertStatus(400)
             ->assertJson([
                 'errors'=>[
@@ -197,21 +200,21 @@ class UserTest extends TestCase
     }
 
     public function testLogoutSuccess(){
-        $this->seed([UserSeeder::class]);
+        $this->seed([RoleAndPermissionSeeder::class, UserSeeder::class]);
 
         $this->delete(uri: '/api/users/logout',headers:[
-            'Authorization'=> 'test'
+            'Authorization'=> 'token-admin'
         ])->assertStatus(200)
             ->assertJson([
                 "data"=>true
             ]);
 
-        $user =User::where('username','test')->first();
+        $user =User::where('username','admin')->first();
         self::assertNull($user->token);
     }
 
     public function testLogoutFailed(){
-        $this->seed([UserSeeder::class]);
+        $this->seed([RoleAndPermissionSeeder::class, UserSeeder::class]);
 
         $this->delete(uri: '/api/users/logout', headers:[
             'Authorization'=> 'salah'

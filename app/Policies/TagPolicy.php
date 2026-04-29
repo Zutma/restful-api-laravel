@@ -9,16 +9,21 @@ class TagPolicy
 {
     public function view(User $user, Tag $tag): bool
     {
-        return $user->role === 'admin' || $tag->user_id === $user->id;
+        return $user->can('tag-manage');
+    }
+
+    public function create(User $user): bool
+    {
+        return $user->can('tag-manage');
     }
 
     public function update(User $user, Tag $tag): bool
     {
-        return $user->role === 'admin' || $tag->user_id === $user->id;
+        return $user->can('tag-manage');
     }
 
     public function delete(User $user, Tag $tag): bool
     {
-        return $user->role === 'admin' || $tag->user_id === $user->id;
+        return $user->can('tag-manage');
     }
 }

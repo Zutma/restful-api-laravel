@@ -7,6 +7,7 @@ use App\Models\User;
 use Database\Seeders\ContactSeeder;
 use Database\Seeders\SearchSeeder;
 use Database\Seeders\UserSeeder;
+use Database\Seeders\RoleAndPermissionSeeder;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
@@ -19,7 +20,7 @@ class ContactTest extends TestCase
 
     public function testCreateSuccess(){
 
-        $this->seed([UserSeeder::class]);
+        $this->seed([RoleAndPermissionSeeder::class, UserSeeder::class]);
 
         $this->post('/api/contacts',[
             'first_name'=> 'eko',
@@ -27,7 +28,7 @@ class ContactTest extends TestCase
             'email'=> 'eko@pzn.com',
             'phone'=>'0123345789'
         ],[
-            'Authorization'=>'test'
+            'Authorization'=>'token-user1'
         ])->assertStatus(201)->assertJson([
             'data'=>[
                 'first_name'=> 'eko',
@@ -39,7 +40,7 @@ class ContactTest extends TestCase
     }
 
     public function testCreateFailed(){
-        $this->seed([UserSeeder::class]);
+        $this->seed([RoleAndPermissionSeeder::class, UserSeeder::class]);
 
         $this->post('/api/contacts',[
             'first_name'=> '',
@@ -47,7 +48,7 @@ class ContactTest extends TestCase
             'email'=> 'ekopzn.com',
             'phone'=>'0123345789'
         ],[
-            'Authorization'=>'test'
+            'Authorization'=>'token-user1'
         ])->assertStatus(400)->assertJson([
             'errors'=>[
                 'first_name'=>[
@@ -61,7 +62,7 @@ class ContactTest extends TestCase
     }
 
     public function testCreateUnauthorized(){
-        $this->seed([UserSeeder::class]);
+        $this->seed([RoleAndPermissionSeeder::class, UserSeeder::class]);
 
         $this->post('/api/contacts',[
             'first_name'=> '',
@@ -78,12 +79,12 @@ class ContactTest extends TestCase
     }
 
     public function testGetSuccess(){
-        $this->seed([UserSeeder::class, ContactSeeder::class]);
+        $this->seed([RoleAndPermissionSeeder::class, UserSeeder::class, ContactSeeder::class]);
 
         $contact = Contact::query()->limit(1)->first();
 
         $this->get('/api/contacts/'.$contact->id,[ 
-            'Authorization'=>'test'
+            'Authorization'=>'token-user1'
         ])->assertStatus(200)->assertJson([
             'data'=>[
                 'first_name'=> 'test',
@@ -95,12 +96,12 @@ class ContactTest extends TestCase
     }
 
     public function testGetNotFound(){
-        $this->seed([UserSeeder::class, ContactSeeder::class]);
+        $this->seed([RoleAndPermissionSeeder::class, UserSeeder::class, ContactSeeder::class]);
 
         $contact = Contact::query()->limit(1)->first();
 
         $this->get('/api/contacts/'.($contact->id+1),[ 
-            'Authorization'=>'test'
+            'Authorization'=>'token-user1'
         ])->assertStatus(404)->assertJson([
             'errors'=>[
                 'message'=> ['not found']
@@ -109,21 +110,17 @@ class ContactTest extends TestCase
     }
 
     public function testGetOtherUserContact(){
-        $this->seed([UserSeeder::class, ContactSeeder::class]);
+        $this->seed([RoleAndPermissionSeeder::class, UserSeeder::class, ContactSeeder::class]);
 
         $contact = Contact::query()->limit(1)->first();
 
         $this->get('/api/contacts/'.$contact->id,[ 
-            'Authorization'=>'test2'
-        ])->assertStatus(404)->assertJson([
-            'errors'=>[
-                'message'=> ['not found']
-                ]
-            ]);
+            'Authorization'=>'token-user2'
+        ])->assertStatus(403);
     }
 
     public function testUpdateSuccess(){
-        $this->seed([UserSeeder::class, ContactSeeder::class]);
+        $this->seed([RoleAndPermissionSeeder::class, UserSeeder::class, ContactSeeder::class]);
 
         $contact = Contact::query()->limit(1)->first();
 
@@ -133,7 +130,7 @@ class ContactTest extends TestCase
             'email'=> 'test2@pzn.com',
             'phone'=>'0123345789'
         ],[
-            'Authorization'=>'test'
+            'Authorization'=>'token-user1'
         ])->assertStatus(200)->assertJson([
             'data'=>[
                 'first_name'=> 'test2',
@@ -146,7 +143,7 @@ class ContactTest extends TestCase
     }
 
     public function testUpdateValidationError(){
-        $this->seed([UserSeeder::class, ContactSeeder::class]);
+        $this->seed([RoleAndPermissionSeeder::class, UserSeeder::class, ContactSeeder::class]);
 
         $contact = Contact::query()->limit(1)->first();
 
@@ -156,7 +153,7 @@ class ContactTest extends TestCase
             'email'=> 'test2@pzn.com',
             'phone'=>'0123345789'
         ],[
-            'Authorization'=>'test'
+            'Authorization'=>'token-user1'
         ])->assertStatus(400)->assertJson([
             'errors'=>[
                 'first_name'=> ['The first name field is required.']
@@ -165,28 +162,28 @@ class ContactTest extends TestCase
     }
 
     public function testDeleteSuccess(){
-        $this->seed([UserSeeder::class, ContactSeeder::class]);
+        $this->seed([RoleAndPermissionSeeder::class, UserSeeder::class, ContactSeeder::class]);
 
         $contact = Contact::query()->limit(1)->first();
 
         $this->delete('/api/contacts/'.$contact->id,[ 
             
         ],[
-            'Authorization'=>'test'
+            'Authorization'=>'token-user1'
         ])->assertStatus(200)->assertJson([
             'data'=>true
             ]);
     }
 
     public function testDeleteNotFound(){
-        $this->seed([UserSeeder::class, ContactSeeder::class]);
+        $this->seed([RoleAndPermissionSeeder::class, UserSeeder::class, ContactSeeder::class]);
 
         $contact = Contact::query()->limit(1)->first();
 
         $this->delete('/api/contacts/'.($contact->id+1),[ 
             
         ],[
-            'Authorization'=>'test'
+            'Authorization'=>'token-user1'
         ])->assertStatus(404)->assertJson([
             'errors'=>[
                 'message'=> ['not found']
@@ -195,9 +192,9 @@ class ContactTest extends TestCase
     }
 
     public function testSearchByFirstName(){
-        $this->seed([UserSeeder::class, SearchSeeder::class]);
+        $this->seed([RoleAndPermissionSeeder::class, UserSeeder::class, SearchSeeder::class]);
         $response = $this->get('/api/contacts?name=first',[
-            'Authorization'=>'test'
+            'Authorization'=>'token-user1'
         ])
         ->assertStatus(200)
         ->json();
@@ -209,9 +206,9 @@ class ContactTest extends TestCase
     }
 
     public function testSearchByLastName(){
-        $this->seed([UserSeeder::class, SearchSeeder::class]);
+        $this->seed([RoleAndPermissionSeeder::class, UserSeeder::class, SearchSeeder::class]);
         $response = $this->get('/api/contacts?name=last',[
-            'Authorization'=>'test'
+            'Authorization'=>'token-user1'
         ])
         ->assertStatus(200)
         ->json();
@@ -223,9 +220,9 @@ class ContactTest extends TestCase
     }
 
     public function testSearchByEmail(){
-       $this->seed([UserSeeder::class, SearchSeeder::class]);
+       $this->seed([RoleAndPermissionSeeder::class, UserSeeder::class, SearchSeeder::class]);
         $response = $this->get('/api/contacts?email=test',[
-            'Authorization'=>'test'
+            'Authorization'=>'token-user1'
         ])
         ->assertStatus(200)
         ->json();
@@ -237,9 +234,9 @@ class ContactTest extends TestCase
     }
 
     public function testSearchByPhone(){
-       $this->seed([UserSeeder::class, SearchSeeder::class]);
+       $this->seed([RoleAndPermissionSeeder::class, UserSeeder::class, SearchSeeder::class]);
         $response = $this->get('/api/contacts?phone=11111',[
-            'Authorization'=>'test'
+            'Authorization'=>'token-user1'
         ])
         ->assertStatus(200)
         ->json();
@@ -251,9 +248,9 @@ class ContactTest extends TestCase
     }
 
     public function testSearchNotFound(){
-       $this->seed([UserSeeder::class, SearchSeeder::class]);
+       $this->seed([RoleAndPermissionSeeder::class, UserSeeder::class, SearchSeeder::class]);
         $response = $this->get('/api/contacts?name=salah',[
-            'Authorization'=>'test'
+            'Authorization'=>'token-user1'
         ])
         ->assertStatus(200)
         ->json();
@@ -265,9 +262,9 @@ class ContactTest extends TestCase
     }
 
     public function testSearchByPage(){
-      $this->seed([UserSeeder::class, SearchSeeder::class]);
+      $this->seed([RoleAndPermissionSeeder::class, UserSeeder::class, SearchSeeder::class]);
         $response = $this->get('/api/contacts?size=5&page=2',[
-            'Authorization'=>'test'
+            'Authorization'=>'token-user1'
         ])
         ->assertStatus(200)
         ->json();
@@ -281,7 +278,7 @@ class ContactTest extends TestCase
 
     public function testUpdateOtherUserContact()
     {
-        $this->seed([UserSeeder::class, ContactSeeder::class]);
+        $this->seed([RoleAndPermissionSeeder::class, UserSeeder::class, ContactSeeder::class]);
         $contact = Contact::query()->limit(1)->first();
 
         $this->put('/api/contacts/' . $contact->id, [
@@ -290,17 +287,17 @@ class ContactTest extends TestCase
             'email' => 'test2@pzn.com',
             'phone' => '0123345789'
         ], [
-            'Authorization' => 'test2'
-        ])->assertStatus(404);
+            'Authorization' => 'token-user2'
+        ])->assertStatus(403);
     }
 
     public function testDeleteOtherUserContact()
     {
-        $this->seed([UserSeeder::class, ContactSeeder::class]);
+        $this->seed([RoleAndPermissionSeeder::class, UserSeeder::class, ContactSeeder::class]);
         $contact = Contact::query()->limit(1)->first();
 
         $this->delete('/api/contacts/' . $contact->id, [], [
-            'Authorization' => 'test2'
-        ])->assertStatus(404);
+            'Authorization' => 'token-user2'
+        ])->assertStatus(403);
     }
 }

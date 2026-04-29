@@ -16,6 +16,7 @@ use Illuminate\Support\Facades\Auth;
 class ContactController extends Controller
 {
     public function create(ContactCreateRequest $request): JsonResponse {
+        $this->authorize('create', Contact::class);
         $data = $request->validated();
         $user = Auth::user();
 
@@ -23,7 +24,7 @@ class ContactController extends Controller
         $contact->user_id = $user->id;
         $contact->save();
 
-        return (new ContactResource($contact))/*->additional(['errors' => null])*/->response()->setStatusCode(201);
+        return (new ContactResource($contact))->response()->setStatusCode(201);
     }
 
     public function get(int $idContact): JsonResponse {
@@ -92,7 +93,7 @@ class ContactController extends Controller
 
         $contacts = Contact::query();
 
-        if ($user->role !== 'admin') {
+        if (!$user->can('contact-manage')) {
             $contacts->where('user_id', $user->id);
         }
 

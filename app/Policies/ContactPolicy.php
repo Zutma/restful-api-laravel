@@ -9,16 +9,21 @@ class ContactPolicy
 {
     public function view(User $user, Contact $contact): bool
     {
-        return $user->role === 'admin' || $contact->user_id === $user->id;
+        return $user->can('contact-manage') || $contact->user_id === $user->id;
+    }
+
+    public function create(User $user): bool
+    {
+        return true;
     }
 
     public function update(User $user, Contact $contact): bool
     {
-        return $user->role === 'admin' || $contact->user_id === $user->id;
+        return $user->can('contact-manage') || $contact->user_id === $user->id;
     }
 
     public function delete(User $user, Contact $contact): bool
     {
-        return $user->role === 'admin' || $contact->user_id === $user->id;
+        return $user->can('contact-manage') || $contact->user_id === $user->id;
     }
 }

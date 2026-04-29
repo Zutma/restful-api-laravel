@@ -29,7 +29,7 @@ class TaskPolicy
      */
     public function create(User $user): bool
     {
-        return $user->can('task-create');
+        return $user->can('task-manage');
     }
 
     /**
@@ -37,8 +37,7 @@ class TaskPolicy
      */
     public function update(User $user, Task $task): bool
     {
-        return $user->can('task-edit') || $task->user_id === $user->id;
-
+        return $user->can('task-manage') && $task->user_id === $user->id;
     }
 
     /**
@@ -47,7 +46,7 @@ class TaskPolicy
     public function delete(User $user, Task $task): bool
     {
         // return $user->role === 'admin' || $user->id === $task->user_id;
-        return $user->can('task-delete') || $task->user_id === $user->id;
+        return $user->can('task-manage') && $task->user_id === $user->id;
     }
 
     /**
@@ -63,6 +62,7 @@ class TaskPolicy
      */
     public function forceDelete(User $user, Task $task): bool
     {
-        //
+        //               $task->assignees()->where('user_id', $user->id)->exists();
+
     }
 }

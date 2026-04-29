@@ -13,6 +13,7 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 class TagController extends Controller
 {
     public function create(TagCreateRequest $request): JsonResponse{
+        $this->authorize('create', Tag::class);
         $data = $request->validated();
         $user = Auth::user();
 
@@ -20,9 +21,7 @@ class TagController extends Controller
         $tag->user_id=$user->id;
         $tag->save();
 
-        return (new TagResource($tag))/*->additional([
-            'errors'=>null
-        ])*/->response()->setStatusCode(201);
+        return (new TagResource($tag))->response()->setStatusCode(201);
     }
 
     public function list(): JsonResponse{
@@ -30,13 +29,13 @@ class TagController extends Controller
 
         $tags = Tag::query();
 
-        if ($user->role !== 'admin') {
+        if (!$user->hasAnyRole(['admin', 'manager'])) {
             $tags->where('user_id', $user->id);
         }
 
         $tags = $tags->get();
 
-        return (TagResource::collection($tags))/*->additional(['errors'=>null])*/->response();
+        return (TagResource::collection($tags))->response();
     }
 
     public function get(int $idTag): JsonResponse {

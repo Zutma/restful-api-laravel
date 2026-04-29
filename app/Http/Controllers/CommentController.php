@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\Auth;
 class CommentController extends Controller
 {
     public function create(int $idTask, CommentCreateRequest $request): JsonResponse{
+        $this->authorize('create', Comment::class);
         $user = Auth::user();
 
         $task = Task::where('id', $idTask)->first();
@@ -34,7 +35,7 @@ class CommentController extends Controller
             'user_id'=>$user->id
         ]);
 
-        return (new CommentResource($comment))/*->additional(['errors'=> null])*/->response()->setStatusCode(201);
+        return (new CommentResource($comment))->response()->setStatusCode(201);
     }
 
     public function list(int $idTask):JsonResponse{

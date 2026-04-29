@@ -9,13 +9,21 @@ class CommentPolicy
 {
     public function view(User $user, Comment $comment): bool
     {
-        // Comments are usually public if you can see the task, 
-        // but for RBAC consistency, we'll allow admin or owner.
-        return $user->role === 'admin' || $comment->user_id === $user->id;
+        return $user->can('comment-manage') || $comment->user_id === $user->id;
+    }
+
+    public function create(User $user): bool
+    {
+        return true;
+    }
+
+    public function update(User $user, Comment $comment): bool
+    {
+        return $user->can('comment-manage') || $comment->user_id === $user->id;
     }
 
     public function delete(User $user, Comment $comment): bool
     {
-        return $user->role === 'admin' || $comment->user_id === $user->id;
+        return $comment->user_id === $user->id;
     }
 }

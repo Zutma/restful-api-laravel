@@ -11,7 +11,7 @@ class SearchSeeder extends Seeder
 {
     public function run(): void
     {
-        $user = User::where('username','test')->first();
+        $user = User::where('username','user1')->first();
         for($i = 0; $i < 20; $i++){
             Contact::create([
                 'first_name'=> 'first'.$i,
